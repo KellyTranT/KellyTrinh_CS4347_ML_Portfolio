@@ -5,4 +5,4 @@ Name: Kelly Trinh --
 Course: CS 4375.004
 
 # Assignment - Portfolio Setup & Overview of Machine Learning
-You can read my personal summary and reflection of Machine Learning [here](Overview_of_ML.pdf)
+You can read my personal summary and reflection of Machine Learning [here](Overview of ML.pdf)
