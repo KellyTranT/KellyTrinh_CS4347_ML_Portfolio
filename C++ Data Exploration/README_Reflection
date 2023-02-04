@@ -1,1 +1,26 @@
+Output of Code:
+```
+Opening file Boston.csv.
+Readling line 1
+heading: rm,medv
+new length 506
+Closing Boston.csv file
+Number of records: 506
+
+Stats for rm:
+Sum = 3180.03
+Mean = 6.28463
+Median = 6.2085
+Range = 5.219
+
+Stats for medv:
+Sum = 11401.6
+Mean = 22.5328
+Median = 21.2
+Range = 45
+
+Covariance between rm and medv: 4.49345
+Correlation between rm and medv: 0.69536
+```
+
 
