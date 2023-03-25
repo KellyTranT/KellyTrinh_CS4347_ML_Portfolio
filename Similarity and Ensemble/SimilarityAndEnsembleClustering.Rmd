@@ -1,0 +1,197 @@
+---
+title: "Clustering"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+---
+
+*The data set used in this assignment can be accessed* ***[here](https://www.kaggle.com/datasets/aryashah2k/credit-card-customer-data)***
+
+This data set includes information regarding customer credit card data. In this part of the assignment, I focused on the 'Avg_Credit_Limit' and 'Total_Credit_Cards' for the clustering, with 'Total_visits_bank' being the target. 
+
+## KMeans Clustering
+First, I performed KMeans Clustering on the data set. This section reads in the data from the csv file
+```{r}
+df <- read.csv('/Users/kellytrinh/Desktop/school/Similarity and Ensemble/Credit Card Customer Data.csv', na.strings="NA", header=TRUE)
+```
+
+#### Data Cleaning and Exploration
+I then did some data exploration, along with cleaning up the data by removing any NAs if they existed. 
+```{r}
+# Data exploration?
+names(df)
+head(df)
+summary(df)
+sapply(df, function(x) sum(is.na(x)==TRUE))
+df <- df[!apply(is.na(df) | df == "", 1, all),]
+```
+
+Since the values of the data are on different scales (i.e. the scale of credit limit is extremely different from the scale of total credit cards), I scaled the data before performing the clustering. I displayed the head of the scaled dataset to see what the new values looked like as well.
+```{r}
+df[,c(3:4)] <- scale(df[,c(3:4)])
+head(df)
+```
+
+
+### Plot the within-groups sums of squares vs. the number of clusters
+In the section below, I used a function to plot the within-groups sums of squares vs. the number of clusters. I did this because I wanted to see where the plot would elbow. This would indicate the best amount of clusters that we would need in the KMeans clustering.
+```{r}
+wsplot <- function(df, nc=15, seed=1234){
+  withinss <- (nrow(df)-1)*sum(apply(df,2,var))
+  for(i in 2:nc){
+    set.seed(seed)
+    withinss[i] <- sum(kmeans(df,centers=i)$withinss)
+  }
+  plot(1:nc, withinss, type="b", xlab="Number of Clusters", ylab="Within groups sum of squares")
+}
+wsplot(df[,c(3:4)])
+```
+
+### NbClust()
+From the graph above, we can see that it elbows at about 3 clusters, so that indicates that using 3 clusters might be the best for this dataset. However, we can verify this estimate by using NbClust(), which is shown below. 
+```{r}
+library(NbClust)
+set.seed(1234)
+nc <- NbClust(df, min.nc=2, max.nc=15, method="kmeans")
+```
+
+```{r}
+table(nc$Best.n[1,])
+barplot(table(nc$Best.n[1,]),
+        xlab="Number of Clusters", ylab="Number of Criteria", main="Number of Clusters Chosen by 15 Criteria")
+```
+The barplot above indicates that 2, 3, and 12 clusters would be good choices. Since 3 is the highest bar in the plot, I chose to go with 3 clusters for the KMeans clustering.
+
+### KMeans
+Now, I'm fitting the model using the kmeans() function. I chose for the algorithm to have 20 random starts arbitrarily.
+```{r}
+set.seed(1234)
+bankCluster <- kmeans(df[,3:4], 3, nstart=20)
+bankCluster
+```
+
+Although we ususally cluster blind, I chose my target for this assignment to be 'Total_visits_bank' in the dataset, so we compare the clusters with the total amount of visits that a customers has to the bank. 
+```{r}
+table(bankCluster$cluster, df$Total_visits_bank)
+```
+
+Now, I plot the clusters to see a visual representation of it. The plot is seen below.
+```{r}
+plot(df$Avg_Credit_Limit, df$Total_Credit_Cards, pch=21, bg=c("red","yellow","blue","purple")[unclass(bankCluster$cluster)], main="Banking")
+```
+
+The centroids are found in bankCluster$centers, so I wanted to display those as well. This is done below
+```{r}
+bankCluster$size
+bankCluster$centers
+```
+
+Since we scaled the data in the beginning, the centroids were calculated based on that scaled data. Below, I used the aggregate() function to get the variable means for each cluster in units of the unscaled data. 
+```{r}
+aggregate(df[3:4], by=list(cluster=bankCluster$cluster), mean)
+```
+
+### Model Analysis
+We now analyze our data. I cross-tabulated the 'Total_visits_bank' with the clusters to see whether or not the clusters are strongly correlated with the amount of bank visits a customer performs. 
+```{r}
+ct.km <- table(df$Total_visits_bank, bankCluster$cluster)
+head(ct.km)
+```
+
+Below, I quantified the agreement between the cluster and the target attribute. I used an adjusted Rand index, which provides a measure of agreement.
+```{r}
+library(flexclust)
+randIndex(ct.km)
+```
+
+As we can see, the result we got was around 0.137. Since the result could range from -1, being no agreement, and 1, being perfect agreement, we can say that our results had decent agreement. This means that there can be some relation between the clusters and the amount of visits that a customer performs at a bank. 
+
+
+## Hierarchical Clustering
+In contrast to KMeans Clustering, I'm now going to attempt to do Hierarchical clustering on the same data set. I'm going to be using the two same attributes for clustering, and I'm going to have the same target attribute to compare the clusters against.
+
+Below, I re-read in the dataset from the csv file in order to get rid of the scaled data that might previously be there.
+```{r}
+df <- read.csv('/Users/kellytrinh/Desktop/school/Similarity and Ensemble/Credit Card Customer Data.csv', na.strings="NA", header=TRUE)
+```
+
+### Data exploration and cleaning
+I re-did my data exploration and cleaning by removing the NAs. I have less functions to explore the data here because I previously completed that step.
+```{r}
+head(df)
+sapply(df, function(x) sum(is.na(x)==TRUE))
+df <- df[!apply(is.na(df) | df == "", 1, all),]
+```
+
+### Scale the data for the clustering
+I re-scaled the data of columns that I'm using, which is shown below.
+```{r}
+df.scaled <- scale(df[,c(3:5)])
+head(df.scaled)
+```
+
+### Distance
+Below, I calculated the Euclidean distances between each of the observations using average-linkage. Then, also shown below, I plotted the clustering performed in a dendogram.
+```{r}
+d <- dist(df.scaled)
+fit.average <- hclust(d, method="average")
+plot(fit.average, hang=-1, cex=.8, main="Hierarchial Clustering")
+```
+
+As we can see the dendogram is extremely hard to interpret because there are so many observations in this data set.
+
+### Cut the dendogram
+Below, I created a loop in order to cut the dendogram. I cut the dendogram in terms with 'Total_bank_visits'. I chose to do up 15 cuts to stay consistent with the KMeans clustering so I could compare the two. The KMeans clustering used NbClust() chosen by 15 criteria. 
+```{r}
+for(c in 3:15) {
+  cluster_cut <- cutree(fit.average,c)
+  table_cut <- table(cluster_cut, df$Total_visits_bank)
+  print(table_cut)
+  ri <- randIndex(table_cut)
+  print(paste("cut=", c, "Rand index = ", ri))
+}
+```
+
+The results from cutting the dendogram show that cuts at 7-11 and 15 gives the best correspondence with 'Total_bank_visits'. Specifically, 7 cuts gives the best correspondence out of all the Rand index values. This is interesting because, based on the KMeans clustering, having 7 clusters was not one of the best options.
+
+## Model Based Clustering
+Now, I'm lastly going to try Model Based Clustering on the dataset, which is more of a statistical approach to clustering.
+
+Below, I re-read in the data from the csv file in order to "reset" the data.
+```{r}
+df <- read.csv('/Users/kellytrinh/Desktop/school/Similarity and Ensemble/Credit Card Customer Data.csv', na.strings="NA", header=TRUE)
+```
+
+#### Data cleaning and exploration
+Since we previously did data exploration twice in this part of the assignment, I'm just going to clean the data again by removing NAs.
+```{r}
+sapply(df, function(x) sum(is.na(x)==TRUE))
+df <- df[!apply(is.na(df) | df == "", 1, all),]
+```
+
+#### Model Clustering
+The below code performs the model-based clustering based on the two attributes that I previously used, which are related to a customer's credit score and the customer's total amount of credit cards. 
+```{r}
+library(mclust)
+citation("mclust")
+fit <- Mclust(df[,c(3:4)])
+plot(fit)
+```
+
+Model-based clustering assumes many data models and uses statistical measures, such as maximum likelihood and Bayes Criteria to identify the most likely model and the most likely number of clusters. Above, I used the Mclust() function to perform the clustering, which selects the optimal model according to multiple statistical plots. I displayed all of the plots, but I'm going to be focusing on the Bayesian Information Criterion (BIC) plot.
+
+The first plot, or the BIC plot, displays the models according to BIC for EM (Expectation-Maximization). The best model would be the one with the highest BIC, or the highest option in the plot. Using this, we can see that VEV with 8 clusters is the best model. VEV stands for varying volume, equal shape, varying orientation. This means that the shape of the clusters are ellipsoidal covariance. 
+
+## Analysis of Clustering Models
+After completing all of the three clustering methods, there were varying results. Using KMeans clustering, we were able to see that 3 clusters was the best option, however it did not give us a great agreement (ARI) score. This means that there may not have been a great amount of correspondence between the two attributes in terms of the amount of bank visits that a customer performs at a bank. For Hierarchial clustering, the best Rand index that we got was for 7 clusters using the same two attributes (Credit Limit and Total Credit Cards). This is different in comparison to using the KMeans clustering. However, the results of the Rand index for 7 clusters in this clustering method was still not extremely high, meaning that even though there was some correspondence, it still wasn't great. Lastly, with Model-based clustering, we were able to determine the best statistical model for clustering the dataset. This type of clustering wasn't able to tell us similar results in comparison to the first two, but it chose 9 clusters as the most optimal amount for the chosen model.
+
+Through these observations, we are able to see that the dataset does not necessarily have a strong correspondence between average credit score and total credit cards in terms of total bank visits. The insights that we received were that the data does not necessarily have a hierarchical structure, and clustering the data using KMeans visually gave us three distinct clusters. The ARI score was also not negative, meaning that KMeans was an "okay" clustering method. 
+
+Each of the clustering methods had their own pros and cons, and there are reasons that the results may have not been completely consistent. For instance, model-based clustering assumes that the cluster group densities are Gaussian when they may not be. This may cause overfitting of the data.
+
+#### References:
+The references that I used in order to do the model-based clustering and analysis are:
+[1] https://www.statmethods.net/advstats/cluster.html
+[2] https://www.stat.cmu.edu/~rnugent/PUBLIC/teaching/CMU729/Lectures/MBCComments.pdf
