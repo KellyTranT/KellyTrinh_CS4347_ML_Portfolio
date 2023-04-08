@@ -19,3 +19,6 @@ I re-created Logistic Regression and Naive Bayes algorithms in C++. You can see 
 
 # Assignment 4 - Similarity and Ensemble
 This was a project that I worked on in a group of 5. For my part, I performed different clustering methods on a data set, specifically KMeans, Hierarchical, and Model-based clustering. You can see my part [here](https://github.com/KellyTranT/KellyTrinh_CS4375_ML_Portfolio/blob/main/Similarity%20and%20Ensemble/Notebook-3-Clustering.pdf), and the rest of the project completed by my team members in the folder [here](https://github.com/KellyTranT/KellyTrinh_CS4375_ML_Portfolio/tree/main/Similarity%20and%20Ensemble).
+
+# Assignment 5 - ML with sklearn
+This project is my first Python ML project, where I performed different algorithms as well as trained two neural networks with a dataset. You can see the PDF of my project [here]()
