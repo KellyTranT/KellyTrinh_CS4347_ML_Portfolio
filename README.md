@@ -22,3 +22,6 @@ This was a project that I worked on in a group of 5. For my part, I performed di
 
 # Assignment 5 - ML with sklearn
 This project is my first Python ML project, where I performed different algorithms as well as trained two neural networks with a dataset. You can see the PDF of my project [here](https://github.com/KellyTranT/KellyTrinh_CS4375_ML_Portfolio/blob/main/ML%20with%20sklearn/ML_with_sklearn.ipynb%20-%20Colaboratory.pdf)
+
+# Assignment 6 - Image Classification
+In this project, I performed classification on a data set of images using the Keras and Tensorflow libraries in Python. I used deep learning with neural networks. You can see the models that I created for the images [here]()
