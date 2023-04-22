@@ -5,7 +5,7 @@ Name: Kelly Trinh --
 Course: CS 4375.004
 
 # Skills Learned Throughout the Course
-I have strengthened and gained a significant amount of technical and soft skills through the completion of this course. Please read about these skills [here]()!
+I have strengthened and gained a significant amount of technical and soft skills through the completion of this course. Please read about these skills [here](https://github.com/KellyTranT/KellyTrinh_CS4375_ML_Portfolio/blob/main/Skills%20from%20Machine%20Learning.pdf)!
 
 # Portfolio Setup & Overview of Machine Learning
 You can read my personal summary and reflection of Machine Learning [here](Overview_of_ML.pdf).
